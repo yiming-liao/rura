@@ -1,41 +1,49 @@
-import type { Hook } from "@/types";
+import type { RuraHook } from "@/types";
 import { runRura } from "@/run-rura";
 
-export function createRura<Context = unknown, Output = unknown>(
-  initialHooks: Hook<Context, Output>[] = [],
+/**
+ * Creates a reusable pipeline instance.
+ * Hooks can be registered, merged, inspected, and executed in order.
+ *
+ * @param initialHooks - Optional list of hooks to initialize the pipeline with.
+ *
+ * @returns An API for managing and running the pipeline.
+ */
+export function createRura<Ctx = unknown, Out = unknown>(
+  initialHooks: RuraHook<Ctx, Out>[] = [],
 ) {
-  const hooks = [...initialHooks].map((el) => applyDefaultOrder(el));
+  const hooks = [...initialHooks].map((h) => applyDefaultOrder(h));
 
-  /** Ensure hook has a default order */
-  function applyDefaultOrder(h: Hook<Context, Output>): Hook<Context, Output> {
+  /** Ensures that every hook has a numeric order value. */
+  function applyDefaultOrder(h: RuraHook<Ctx, Out>): RuraHook<Ctx, Out> {
     return { ...h, order: h.order ?? 0 };
   }
 
-  /** Sort hooks by .order */
+  /** Sorts hooks by ascending order. */
   function sortHooks() {
     hooks.sort((a, b) => a.order! - b.order!);
   }
 
-  /** Add a new hook */
-  function use(hook: Hook<Context, Output>) {
+  /** Registers a new hook. */
+  function use(hook: RuraHook<Ctx, Out>) {
     hooks.push(applyDefaultOrder(hook));
     sortHooks();
     return api;
   }
 
-  /** Merge hooks from another Rura */
-  function merge(other: ReturnType<typeof createRura<Context, Output>>) {
+  /** Merges hooks from another Rura instance. */
+  function merge(other: ReturnType<typeof createRura<Ctx, Out>>) {
     other.getHooks().forEach((h) => hooks.push(applyDefaultOrder(h)));
     sortHooks();
     return api;
   }
 
-  /** Always return sorted hooks */
+  /** Returns a sorted shallow copy of all hooks. */
   function getHooks() {
     return [...hooks];
   }
 
-  /** Pretty debug output */
+  /** Prints a readable list of registered hooks. */
   function debugHooks() {
     console.log(`\n💧 Rura Pipeline (${hooks.length} hooks)`);
     console.log("───");
@@ -46,13 +54,13 @@ export function createRura<Context = unknown, Output = unknown>(
     console.log("───\n");
   }
 
-  /** Run pipeline (no sorting here anymore) */
-  async function run(ctx: Context) {
-    return runRura<Context, Output>(ctx, hooks);
+  /** Executes the pipeline. */
+  async function run(ctx: Ctx) {
+    return runRura<Ctx, Out>(ctx, hooks);
   }
 
   const api = { use, merge, getHooks, debugHooks, run };
-  sortHooks(); // Sort once at initialization
+  sortHooks();
 
   return api;
 }

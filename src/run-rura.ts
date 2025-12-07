@@ -1,19 +1,33 @@
-import type { Hook } from "@/types";
-import { isDone } from "@/is-done";
+import type { RuraHook, RuraResult } from "@/types";
 
-export async function runRura<Context = unknown, Output = unknown>(
-  ctx: Context,
-  hooks: Hook<Context, Output>[],
-): Promise<Output | Context> {
-  hooks.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-
+/**
+ * Executes a list of hooks in order.
+ * - Stops early when a hook returns `{ early: true, output }`.
+ *
+ * @returns A `RuraResult` describing whether the pipeline ended early
+ *          and the final context/output.
+ */
+export async function runRura<Ctx = unknown, Out = unknown>(
+  ctx: Ctx,
+  hooks: RuraHook<Ctx, Out>[],
+): Promise<RuraResult<Ctx, Out>> {
   for (const hook of hooks) {
     const result = await hook.run(ctx);
+    const isEarlyReturn = result && result.early === true;
 
-    if (isDone<Output>(result)) {
-      return result.output;
+    // Early return
+    if (isEarlyReturn) {
+      return {
+        early: true,
+        ctx,
+        output: result.output,
+      };
     }
   }
 
-  return ctx;
+  // Normal return
+  return {
+    early: false,
+    ctx,
+  };
 }

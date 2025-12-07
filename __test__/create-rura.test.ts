@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { Hook } from "@/types";
+import type { RuraHook } from "@/types";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createRura } from "@/create-rura";
 import { runRura } from "@/run-rura";
@@ -10,7 +10,7 @@ vi.mock("@/run-rura", () => ({
 }));
 
 // Helper
-const makeHook = (name: string, order?: number): Hook<any, any> => ({
+const makeHook = (name: string, order?: number): RuraHook<any, any> => ({
   name,
   order,
   run: vi.fn(),
@@ -177,7 +177,7 @@ describe("createRura – Full Test Suite", () => {
 
   it("should trigger the fallback branch of (order ?? 0) if order is undefined", () => {
     // Getter ensures applyDefaultOrder cannot override undefined
-    const getterHook: Hook<any, any> = {
+    const getterHook: RuraHook<any, any> = {
       name: "getter",
       // @ts-expect-error any
       get order() {

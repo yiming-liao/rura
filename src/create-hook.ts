@@ -1,9 +1,18 @@
-import type { Hook } from "@/types";
+import type { RuraHook } from "@/types";
 
-export function createHook<Context = unknown, Output = unknown>(
+/**
+ * Creates a pipeline hook.
+ *
+ * @param name  - Unique name for debugging and inspection.
+ * @param run   - Hook implementation.
+ * @param order - Optional execution order. Lower values run first.
+ *
+ * @returns A normalized `RuraHook` object.
+ */
+export function createHook<Ctx = unknown, Out = unknown>(
   name: string,
-  run: Hook<Context, Output>["run"],
+  run: RuraHook<Ctx, Out>["run"],
   order?: number,
-): Hook<Context, Output> {
+): RuraHook<Ctx, Out> {
   return { name, run, order };
 }
