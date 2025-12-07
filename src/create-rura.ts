@@ -1,8 +1,10 @@
 import type { Hook } from "@/types";
 import { runRura } from "@/run-rura";
 
-export function createRura<Context = unknown, Output = unknown>() {
-  const hooks: Hook<Context, Output>[] = [];
+export function createRura<Context = unknown, Output = unknown>(
+  initialHooks: Hook<Context, Output>[] = [],
+) {
+  const hooks = [...initialHooks];
 
   function use(hook: Hook<Context, Output>) {
     hooks.push(hook);
