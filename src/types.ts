@@ -5,7 +5,7 @@ export interface Done<Output> {
   output: Output;
 }
 
-export interface Hook<Context, Output> {
+export interface Hook<Context = unknown, Output = unknown> {
   name: string;
   order?: number;
   run(ctx: Context): MaybePromise<void | Done<Output>>;
