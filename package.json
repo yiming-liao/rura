@@ -1,0 +1,78 @@
+{
+  "name": "rura",
+  "version": "0.0.0",
+  "description": "A minimal pipeline engine for every modern workflow.",
+  "author": "Yiming Liao",
+  "license": "MIT",
+  "homepage": "https://github.com/yiming-liao/rura#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yiming-liao/rura.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yiming-liao/rura/issues"
+  },
+  "keywords": [
+    "pipeline",
+    "hooks",
+    "hook-system",
+    "pipeline-engine",
+    "flow",
+    "workflow",
+    "middleware",
+    "typescript",
+    "ts",
+    "utility",
+    "functional",
+    "composition",
+    "composable"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "type": "module",
+  "scripts": {
+    "build": "tsup",
+    "prepublishOnly": "yarn build",
+    "test": "vitest",
+    "type": "tsc --noEmit",
+    "lint": "eslint",
+    "lint:debug": "eslint --debug",
+    "knip": "knip --config .config/knip.config.ts"
+  },
+  "sideEffects": false,
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "@vitest/coverage-v8": "4.0.15",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-unicorn": "^62.0.0",
+    "eslint-plugin-unused-imports": "^4.3.0",
+    "knip": "^5.69.1",
+    "prettier": "^3.6.2",
+    "ts-node": "^10.9.2",
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.46.4",
+    "vitest": "^4.0.9"
+  }
+}
