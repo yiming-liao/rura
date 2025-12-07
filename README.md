@@ -76,11 +76,15 @@ const result = await runRura(ctx, [addOne, stopIfEven]);
 console.log(result); // -> 2 (early exit triggered)
 ```
 
+If you prefer working with a reusable pipeline instance,  
+you can use the **Pipeline Builder**, introduced below:
+
 ---
 
 ## Pipeline Builder
 
-**createRura()** - Creates a lightweight, composable pipeline instance.
+**createRura()** - Creates a lightweight, composable pipeline instance  
+that can register hooks, merge with other pipelines, and be inspected.
 
 ```ts
 const rura = createRura<Context, Output>();
@@ -130,9 +134,10 @@ console.log(result); // -> { value: 9 }
 
 #### Pipeline Instance Methods
 
-| Method           | Description                                          | Parameters | Returns                      |
-| ---------------- | ---------------------------------------------------- | ---------- | ---------------------------- |
-| **use(hook)**    | Adds a hook to the pipeline.                         | `hook`     | `this` (chainable)           |
-| **merge(other)** | Merges hooks from another pipeline instance.         | `other`    | `this` (chainable)           |
-| **getHooks()**   | Returns all registered hooks.                        | –          | `Hook[]`                     |
-| **run(ctx)**     | Executes the pipeline **_(equivalent to runRura)_**. | `ctx`      | `Promise<Output \| Context>` |
+| Method           | Description                                            | Parameters | Returns                      |
+| ---------------- | ------------------------------------------------------ | ---------- | ---------------------------- |
+| **use(hook)**    | Adds a hook, normalizes its order, and re-sorts hooks. | `hook`     | `this` (chainable)           |
+| **merge(other)** | Merges hooks from another pipeline and re-sorts them.  | `other`    | `this` (chainable)           |
+| **getHooks()**   | Returns a sorted shallow copy of all registered hooks. | –          | `Hook[]`                     |
+| **debugHooks()** | Prints a formatted, human-readable hook list.          | –          | `void`                       |
+| **run(ctx)**     | Executes the pipeline (delegates to `runRura`).        | `ctx`      | `Promise<Output \| Context>` |
