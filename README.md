@@ -2,7 +2,8 @@
 
 <div align="center">
 
-A minimal **pipeline engine** for every modern workflow.
+A minimal **pipeline engine** for every modern workflow,  
+built for clarity and predictable flow.
 
 </div>
 
@@ -16,13 +17,13 @@ A minimal **pipeline engine** for every modern workflow.
 
 </div>
 
-> Clarity meets stability.
+> Build your pipeline like LEGO.
 
 ## Features
 
 - 🎯 **Deterministic** – Ordered hooks with effortless early exit.
 - 🧱 **Typed** – Inferred context and output with zero boilerplate.
-- 🌏 **Universal** – Tiny, framework-agnostic, and ready for any flow.
+- 🌏 **Universal** – Tiny, framework-agnostic, and ready for **_any_** flow.
 
 ## Installation
 
