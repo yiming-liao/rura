@@ -45,14 +45,14 @@ type Ctx = typeof ctx;
 
 #### 2. Create your hooks
 
-- Hooks can be defined with `createHook` or manually via the `Hook` type.
+- Hooks can be created with `rura.createHook`, or defined manually using the `RuraHook` type.
 - Hooks may specify an `order`; omitted values default to `0`.
 
 ```ts
-import { createHook, type RuraHook } from "rura";
+import { rura, type RuraHook } from "rura";
 
 // With createHook (recommended for convenience)
-const addOne = createHook<Ctx>("add-one", (ctx) => {
+const addOne = rura.createHook<Ctx>("add-one", (ctx) => {
   ctx.count += 1;
 }); // order: 0
 
@@ -75,7 +75,7 @@ const stopIfEven: RuraHook<Ctx, number> = {
 #### 3. Run the pipeline
 
 ```ts
-const result = await runRura(ctx, [addOne, stopIfEven]);
+const result = rura.run(ctx, [addOne, stopIfEven]);
 
 console.log(result);
 // -> {
@@ -85,21 +85,25 @@ console.log(result);
 //    }
 ```
 
-_If you prefer working with a reusable pipeline instance,  
-you can use the **Pipeline Builder**, introduced below:_
+> Note: If your hooks are asynchronous,  
+> use `rura.createHookAsync` and run them through `rura.runAsync()` accordingly.
 
 ---
 
 ## Pipeline Builder
 
-**createRura()** - Creates a lightweight, composable pipeline instance  
+> If you prefer working with a reusable pipeline instance
+
+**rura.createPipeline()** - Creates a lightweight, composable pipeline instance  
 that can register hooks, merge with other pipelines, and be inspected.
 
 ```ts
-const rura = createRura<Context, Output>();
+import { rura } from "rura";
+
+const pipeline = rura.createPipeline<Context, Output>();
 
 // Add hooks
-rura
+pipeline
   .use(hookA) // chainable
   .use(hookB)
   .use(hookC);
@@ -108,13 +112,12 @@ rura
 example:
 
 ```ts
-import { createRura } from "rura";
-
 type Ctx = { value: number };
 
-// Create a pipeline
-const pipelineA = createRura<Ctx>();
+// Create a reusable pipeline instance
+const pipelineA = rura.createPipeline<Ctx>();
 
+// Register a hook using `use()`
 pipelineA.use({
   name: "add-two",
   run: (ctx) => {
@@ -122,20 +125,20 @@ pipelineA.use({
   },
 });
 
-// Create another pipeline
-const pipelineB = createRura<Ctx>();
-
-pipelineB.use({
-  name: "multiply-three",
-  run: (ctx) => {
-    ctx.value *= 3;
+// Create another pipeline (preloaded with hooks)
+const pipelineB = rura.createPipeline<Ctx>([
+  {
+    name: "multiply-three",
+    run: (ctx) => {
+      ctx.value *= 3;
+    },
   },
-});
+]);
 
-// Merge pipelines
+// Merge pipelines into a single combined pipeline
 const pipeline = pipelineA.merge(pipelineB);
 
-// Run it
+// Execute the pipeline
 const result = await pipeline.run({ value: 1 });
 
 console.log(result);
@@ -145,12 +148,29 @@ console.log(result);
 //    }
 ```
 
+> Note: If your pipeline includes async hooks,  
+> be sure to use `rura.createPipelineAsync()`, which awaits each hook in order.
+
 #### Pipeline Instance Methods
 
-| Method           | Description                                            | Parameters | Returns               |
-| ---------------- | ------------------------------------------------------ | ---------- | --------------------- |
-| **use(hook)**    | Adds a hook, normalizes its order, and re-sorts hooks. | `hook`     | `this` (chainable)    |
-| **merge(other)** | Merges hooks from another pipeline and re-sorts them.  | `other`    | `this` (chainable)    |
-| **getHooks()**   | Returns a sorted shallow copy of all registered hooks. | –          | `RuraHook[]`          |
-| **debugHooks()** | Prints a formatted, human-readable hook list.          | –          | `void`                |
-| **run(ctx)**     | Executes the pipeline (delegates to `runRura`).        | `ctx`      | `Promise<RuraResult>` |
+`rura.createPipeline()` — Synchronous Pipeline
+
+| Method           | Description                                                       | Parameters | Returns            |
+| ---------------- | ----------------------------------------------------------------- | ---------- | ------------------ |
+| **use(hook)**    | Adds a hook, normalizes its order, and re-sorts hooks.            | `hook`     | `this` (chainable) |
+| **merge(other)** | Merges hooks from another pipeline and re-sorts them.             | `other`    | `this` (chainable) |
+| **getHooks()**   | Returns a sorted shallow copy of all registered hooks.            | –          | `RuraHook[]`       |
+| **debugHooks()** | Prints a formatted, human-readable hook list.                     | –          | `void`             |
+| **run(ctx)**     | Executes the pipeline synchronously. (delegates to `rura.run()`). | `ctx`      | `RuraResult`       |
+
+<br/>
+
+`rura.createPipelineAsync()` — Asynchronous Pipeline
+
+| Method           | Description                                                             | Parameters | Returns               |
+| ---------------- | ----------------------------------------------------------------------- | ---------- | --------------------- |
+| **use(hook)**    | Adds a hook, normalizes its order, and re-sorts hooks.                  | `hook`     | `this` (chainable)    |
+| **merge(other)** | Merges hooks from another pipeline and re-sorts them.                   | `other`    | `this` (chainable)    |
+| **getHooks()**   | Returns a sorted shallow copy of all registered hooks.                  | –          | `RuraHook[]`          |
+| **debugHooks()** | Prints a formatted, human-readable hook list.                           | –          | `void`                |
+| **run(ctx)**     | Executes the pipeline asynchronously. (delegates to `rura.runAsync()`). | `ctx`      | `Promise<RuraResult>` |
