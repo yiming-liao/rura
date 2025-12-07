@@ -86,7 +86,7 @@ console.log(result);
 ```
 
 > Note: If your hooks are asynchronous,  
-> use `rura.createHookAsync` and run them through `rura.runAsync()` accordingly.
+> use `rura.createHookAsync()` and run them through `rura.runAsync()` accordingly.
 
 ---
 
