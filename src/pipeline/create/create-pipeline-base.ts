@@ -1,6 +1,7 @@
 import type { RuraHook } from "@/hooks/types";
 import type { RuraResult } from "@/pipeline/types";
-import { isAsyncHook } from "@/pipeline/run/utils/is-async-hook";
+import { isAsyncHook } from "@/hooks/utils/is-async-hook";
+import { formatDebugMessage } from "@/pipeline/create/utils/format-debug-message";
 
 /**
  * Creates a generic Rura pipeline instance.
@@ -32,9 +33,10 @@ export function createPipelineBase<
   ) => Mode extends "sync"
     ? RuraResult<Ctx, Out>
     : Promise<RuraResult<Ctx, Out>>,
-  options: { mode: "sync" | "async" },
+  options: { name?: string; mode: "sync" | "async" },
 ) {
-  const hooks = [...initialHooks].map((h) => applyDefaultOrder(h));
+  const name = options.name;
+  const hooks = initialHooks.map((h) => applyDefaultOrder(h));
 
   /** Ensures that every hook has a numeric order value. */
   function applyDefaultOrder(h: Hook): Hook {
@@ -70,16 +72,8 @@ export function createPipelineBase<
   }
 
   /** Prints the ordered hook list for debugging purposes. */
-  function debugHooks() {
-    console.log(`\n🌊 Rura Pipeline (${hooks.length} hooks)`);
-    console.log(`───`);
-    hooks.forEach((hook, i) => {
-      const kind = isAsyncHook(hook) ? "async" : "sync";
-      console.log(
-        `${i + 1}. order:${String(hook.order).padStart(4)} | ${hook.name} (${kind})`,
-      );
-    });
-    console.log(`───\n`);
+  function debugHooks(title?: (hooks: Hook[]) => string) {
+    formatDebugMessage(hooks, name, title);
   }
 
   /** Executes the pipeline via the provided strategy function. */

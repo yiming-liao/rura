@@ -1,6 +1,6 @@
 import type { RuraHook } from "@/hooks";
 import type { RuraResult } from "@/pipeline/types";
-import { isAsyncHook } from "@/pipeline/run/utils/is-async-hook";
+import { isAsyncHook } from "@/hooks/utils/is-async-hook";
 
 /**
  * Executes a __synchronous__ Rura pipeline.

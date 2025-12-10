@@ -1,7 +1,7 @@
 /* eslint-disable unicorn/consistent-function-scoping */
 import { describe, it, expect } from "vitest";
 import { createHook, createHookAsync } from "@/hooks/create-hook";
-import { isAsyncHook } from "@/pipeline/run/utils/is-async-hook";
+import { isAsyncHook } from "@/hooks/utils/is-async-hook";
 
 describe("isAsyncHook", () => {
   it("should return false for synchronous hooks", () => {
