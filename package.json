@@ -3,7 +3,6 @@
   "version": "1.0.7",
   "description": "🌊 A pipeline engine that flows like water.",
   "author": "Yiming Liao",
-  "license": "MIT",
   "homepage": "https://github.com/yiming-liao/rura#readme",
   "repository": {
     "type": "git",
@@ -11,6 +10,10 @@
   },
   "bugs": {
     "url": "https://github.com/yiming-liao/rura/issues"
+  },
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/yiming-liao"
   },
   "keywords": [
     "pipeline",
@@ -27,6 +30,8 @@
     "composition",
     "composable"
   ],
+  "license": "MIT",
+  "type": "module",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -42,7 +47,10 @@
     "README.md",
     "LICENSE"
   ],
-  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "scripts": {
     "build": "tsup",
     "prepublishOnly": "yarn build",
@@ -51,10 +59,6 @@
     "lint": "eslint",
     "lint:debug": "eslint --debug",
     "knip": "knip --config .config/knip.config.ts"
-  },
-  "sideEffects": false,
-  "engines": {
-    "node": ">=16.0.0"
   },
   "dependencies": {},
   "devDependencies": {
