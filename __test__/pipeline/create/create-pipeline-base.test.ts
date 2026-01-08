@@ -15,7 +15,10 @@ describe("createRuraBase", () => {
     ReturnType<typeof vi.fn>,
     (ctx: Ctx, hooks: RuraHook<Ctx, Out>[]) => RuraResult<Ctx, Out>,
   ] {
-    const impl = (ctx: Ctx) => ({ early: false, ctx });
+    const impl = (ctx: Ctx): RuraResult<Ctx, Out> => ({
+      early: false as const,
+      ctx,
+    });
     const spy = vi.fn(impl);
     return [spy, impl];
   }
