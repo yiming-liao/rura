@@ -10,7 +10,11 @@ export function createHook<Ctx = unknown, Out = unknown>(
   run: RuraHookSync<Ctx, Out>["run"],
   order?: number,
 ): RuraHookSync<Ctx, Out> {
-  return { name, run, order };
+  return {
+    name,
+    run,
+    ...(order !== undefined ? { order } : {}),
+  };
 }
 
 /**
@@ -23,5 +27,9 @@ export function createHookAsync<Ctx = unknown, Out = unknown>(
   run: RuraHookAsync<Ctx, Out>["run"],
   order?: number,
 ): RuraHookAsync<Ctx, Out> {
-  return { name, run, order };
+  return {
+    name,
+    run,
+    ...(order !== undefined ? { order } : {}),
+  };
 }

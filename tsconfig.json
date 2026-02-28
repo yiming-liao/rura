@@ -1,18 +1,13 @@
 {
+  "extends": "./tsconfig.base.json",
+
   "compilerOptions": {
-    "target": "es2022",
-    "module": "es2022",
-    "moduleResolution": "bundler",
-    "esModuleInterop": true,
-    "strict": true,
-    "resolveJsonModule": true,
-    "verbatimModuleSyntax": true,
-    "isolatedModules": true,
+    "incremental": true,
     "noEmit": true,
-    "skipLibCheck": true,
+
     "paths": {
       "@/*": ["./src/*"]
     }
   },
-  "exclude": ["node_modules", "dist", "coverage"]
+  "include": ["src", "export", "__test__"]
 }

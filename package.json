@@ -52,13 +52,12 @@
     "node": ">=16.0.0"
   },
   "scripts": {
-    "build": "tsup",
-    "prepublishOnly": "yarn build",
-    "test": "vitest",
-    "type": "tsc --noEmit",
+    "type": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint",
-    "lint:debug": "eslint --debug",
-    "knip": "knip --config .config/knip.config.ts"
+    "test": "vitest",
+    "knip": "knip --config .config/knip.config.ts",
+    "build": "tsup",
+    "prepublishOnly": "yarn build"
   },
   "dependencies": {},
   "devDependencies": {
