@@ -1,5 +1,5 @@
-import type { RuraHook } from "@/hooks";
-import type { RuraResult } from "@/pipeline/types";
+import type { RuraHook } from "../../hooks";
+import type { RuraResult } from "../../pipeline/types";
 
 /**
  * Executes an __asynchronous__ Rura pipeline.

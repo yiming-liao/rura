@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable unicorn/consistent-function-scoping */
-import type { RuraHook } from "@/hooks";
+import type { RuraHook } from "../../../../src/hooks";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { formatDebugMessage } from "@/pipeline/create/utils/format-debug-message";
+import { formatDebugMessage } from "../../../../src/pipeline/create/utils/format-debug-message";
 
 describe("formatDebugMessage", () => {
   let logs: string[] = [];

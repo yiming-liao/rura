@@ -1,5 +1,5 @@
-import type { RuraHook } from "@/hooks";
-import { isAsyncHook } from "@/hooks/utils/is-async-hook";
+import type { RuraHook } from "../../../hooks";
+import { isAsyncHook } from "../../../hooks/utils/is-async-hook";
 
 export const formatDebugMessage = <Hook extends RuraHook>(
   hooks: Hook[],

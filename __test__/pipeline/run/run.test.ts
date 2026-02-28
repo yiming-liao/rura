@@ -1,7 +1,7 @@
-import type { RuraHook } from "@/hooks";
+import type { RuraHook } from "../../../src/hooks";
 import { describe, it, expect } from "vitest";
-import { createHook, createHookAsync } from "@/hooks";
-import { run } from "@/pipeline/run/run";
+import { createHook, createHookAsync } from "../../../src/hooks";
+import { run } from "../../../src/pipeline/run/run";
 
 describe("run (synchronous pipeline)", () => {
   it("executes all sync hooks when no early return occurs", () => {

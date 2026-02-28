@@ -1,4 +1,4 @@
-import type { RuraHook, RuraHookAsync } from "@/hooks/types";
+import type { RuraHook, RuraHookAsync } from "../types";
 
 /**
  * Determines whether a given hook is asynchronous.

@@ -1,6 +1,6 @@
-import type { RuraHook } from "@/hooks";
-import { createPipelineBase } from "@/pipeline/create/create-pipeline-base";
-import * as runAsyncModule from "@/pipeline/run/run-async";
+import type { RuraHook } from "../../hooks";
+import { createPipelineBase } from "../../pipeline/create/create-pipeline-base";
+import * as runAsyncModule from "../../pipeline/run/run-async";
 
 /**
  * Creates an __asynchronous__ Rura pipeline.

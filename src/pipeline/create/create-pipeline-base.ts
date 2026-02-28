@@ -1,7 +1,7 @@
-import type { RuraHook } from "@/hooks/types";
-import type { RuraResult } from "@/pipeline/types";
-import { isAsyncHook } from "@/hooks/utils/is-async-hook";
-import { formatDebugMessage } from "@/pipeline/create/utils/format-debug-message";
+import type { RuraHook } from "../../hooks/types";
+import type { RuraResult } from "../../pipeline/types";
+import { isAsyncHook } from "../../hooks/utils/is-async-hook";
+import { formatDebugMessage } from "../../pipeline/create/utils/format-debug-message";
 
 /**
  * Creates a generic Rura pipeline instance.

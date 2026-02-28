@@ -1,9 +1,11 @@
-import type { RuraHookAsync, RuraHookSync } from "@/hooks/types";
+import type { RuraHookAsync, RuraHookSync } from "./types";
 
 /**
- * Creates a synchronous Rura hook.
- * - The hook will be executed without `await`.
- * - Suitable for lightweight, purely synchronous operations.
+ * Creates a synchronous hook.
+ *
+ * The hook executes without awaiting.
+ *
+ * @public
  */
 export function createHook<Ctx = unknown, Out = unknown>(
   name: string,
@@ -18,9 +20,11 @@ export function createHook<Ctx = unknown, Out = unknown>(
 }
 
 /**
- * Creates an asynchronous Rura hook.
- * - The hook will be awaited during pipeline execution.
- * - Suitable for I/O, timers, or any async workflow.
+ * Creates an asynchronous hook.
+ *
+ * The hook executes via `await`.
+ *
+ * @public
  */
 export function createHookAsync<Ctx = unknown, Out = unknown>(
   name: string,

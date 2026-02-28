@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { createHook, createHookAsync } from "@/hooks";
-import { runAsync } from "@/pipeline/run/run-async";
+import { createHook, createHookAsync } from "../../../src/hooks";
+import { runAsync } from "../../../src/pipeline/run/run-async";
 
 describe("runAsync (asynchronous pipeline)", () => {
   it("executes async hooks sequentially when no early return occurs", async () => {

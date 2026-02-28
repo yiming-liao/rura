@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable unicorn/consistent-function-scoping */
-import type { RuraHookSync, RuraHookAsync } from "@/hooks/types";
+import type { RuraHookSync, RuraHookAsync } from "../../src/hooks/types";
 import { describe, it, expect } from "vitest";
-import { createHook, createHookAsync } from "@/hooks/create-hook";
+import { createHook, createHookAsync } from "../../src/hooks/create-hook";
 
 describe("createHook (sync)", () => {
   it("should create a sync hook with given name and run function", () => {

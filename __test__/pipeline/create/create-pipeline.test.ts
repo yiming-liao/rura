@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
-import { createHook, createHookAsync } from "@/hooks";
-import { createPipeline } from "@/pipeline/create/create-pipeline";
-import * as runModule from "@/pipeline/run/run";
+import { createHook, createHookAsync } from "../../../src/hooks";
+import { createPipeline } from "../../../src/pipeline/create/create-pipeline";
+import * as runModule from "../../../src/pipeline/run/run";
 
 describe("createRura (sync pipeline builder)", () => {
   it("uses run internally when executing", () => {

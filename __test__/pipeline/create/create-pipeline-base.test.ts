@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable unicorn/consistent-function-scoping */
-import type { RuraHook } from "@/hooks/types";
-import type { RuraResult } from "@/pipeline/types";
+import type { RuraHook } from "../../../src/hooks/types";
+import type { RuraResult } from "../../../src/pipeline/types";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { createHook, createHookAsync } from "@/hooks";
-import { createPipelineBase } from "@/pipeline/create/create-pipeline-base";
+import { createHook, createHookAsync } from "../../../src/hooks";
+import { createPipelineBase } from "../../../src/pipeline/create/create-pipeline-base";
 
 describe("createRuraBase", () => {
   beforeEach(() => {
