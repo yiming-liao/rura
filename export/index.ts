@@ -1,5 +1,5 @@
 /**
- * Rura — The hook pipeline.
+ * Rura — The hook pipeline
  *
  * @packageDocumentation
  */

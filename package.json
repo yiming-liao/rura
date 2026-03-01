@@ -1,6 +1,6 @@
 {
   "name": "rura",
-  "version": "1.0.8",
+  "version": "1.1.0",
   "description": "The hook pipeline",
   "author": "Yiming Liao",
   "homepage": "https://github.com/yiming-liao/rura#readme",
@@ -28,16 +28,16 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./dist/types/export/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     }
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/types/export/index.d.ts",
   "files": [
-    "dist",
+    "dist/index.*",
     "README.md",
     "LICENSE"
   ],
@@ -51,7 +51,7 @@
     "test": "vitest",
     "knip": "knip --config .config/knip.config.ts",
     "build": "tsup && tsc -p tsconfig.build.json",
-    "prepublishOnly": "yarn build",
+    "prepublishOnly": "yarn build && yarn api:check",
     "api:build": "api-extractor run -c api-extractor/index.json --local",
     "api:check": "api-extractor run -c api-extractor/index.json"
   },
