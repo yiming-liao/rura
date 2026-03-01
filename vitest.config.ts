@@ -1,14 +1,18 @@
-import path from "node:path";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
     include: ["**/*.test.{ts,tsx}"],
-    coverage: { reporter: ["lcov", "text"] },
-  },
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "src"),
+    coverage: {
+      include: ["src/**/*.ts"],
+      exclude: ["src/**/index.ts", "src/**/types.ts", "src/rura.ts"],
+      reporter: ["lcov", "text"],
+      thresholds: {
+        statements: 100,
+        branches: 100,
+        functions: 100,
+        lines: 100,
+      },
     },
   },
 });
