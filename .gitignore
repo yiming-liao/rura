@@ -3,6 +3,9 @@ node_modules/
 
 # build output
 dist/
+dist-types/
+
+# test
 coverage/
 
 # misc
@@ -20,3 +23,4 @@ yarn-error.log*
 
 # api-extractor
 temp/
+

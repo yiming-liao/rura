@@ -29,5 +29,6 @@ jobs:
       - run: yarn type
       - run: yarn lint
       - run: yarn build
+      - run: yarn build:types
       - run: yarn api:check
       - run: yarn test --coverage

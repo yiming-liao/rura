@@ -28,16 +28,16 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./dist/types/export/index.d.ts",
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     }
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
-  "types": "./dist/types/export/index.d.ts",
+  "types": "./dist/index.d.ts",
   "files": [
-    "dist/index.*",
+    "dist",
     "README.md",
     "LICENSE"
   ],
@@ -50,10 +50,12 @@
     "lint": "eslint",
     "test": "vitest",
     "knip": "knip --config .config/knip.config.ts",
-    "build": "tsup && tsc -p tsconfig.build.json",
-    "prepublishOnly": "yarn build && yarn api:check",
+    "build": "tsup",
+    "build:types": "tsc -p tsconfig.build.json && api-extractor run -c api-extractor/index.json --local",
+    "build:release": "yarn build && yarn build:types",
+    "api:check": "api-extractor run -c api-extractor/index.json",
     "api:build": "api-extractor run -c api-extractor/index.json --local",
-    "api:check": "api-extractor run -c api-extractor/index.json"
+    "prepublishOnly": "yarn build:release"
   },
   "dependencies": {},
   "devDependencies": {
