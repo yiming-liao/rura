@@ -3,10 +3,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createHook, createHookAsync } from "../../../src/hooks/create-hook";
 import { createPipelineBase } from "../../../src/pipeline/create/create-pipeline-base";
-import { formatDebugMessage } from "../../../src/pipeline/create/utils/format-debug-message";
+import { logPipelineHooks } from "../../../src/pipeline/create/utils/log-pipeline-hooks";
 
-vi.mock("../../../src/pipeline/create/utils/format-debug-message", () => ({
-  formatDebugMessage: vi.fn(),
+vi.mock("../../../src/pipeline/create/utils/log-pipeline-hooks", () => ({
+  logPipelineHooks: vi.fn(),
 }));
 
 describe("createPipelineBase", () => {
@@ -110,7 +110,7 @@ describe("createPipelineBase", () => {
     expect(result).toBe(pipeline);
   });
 
-  it("debugHooks delegates to formatDebugMessage", () => {
+  it("logHooks delegates to logPipelineHooks with sorted hooks", () => {
     const a = createHook("A", () => {}, 2);
     const b = createHook("B", () => {}, 1);
     const pipeline = createPipelineBase(
@@ -118,9 +118,9 @@ describe("createPipelineBase", () => {
       () => ({ early: false, ctx: null }),
       { mode: "sync", name: "debug-test" },
     );
-    pipeline.debugHooks();
-    expect(formatDebugMessage).toHaveBeenCalledTimes(1);
-    const [hooksArg, nameArg, titleArg] = (formatDebugMessage as any).mock
+    pipeline.logHooks();
+    expect(logPipelineHooks).toHaveBeenCalledTimes(1);
+    const [hooksArg, nameArg, titleArg] = (logPipelineHooks as any).mock
       .calls[0];
     expect(hooksArg.map((h: any) => h.name)).toEqual(["B", "A"]);
     expect(nameArg).toBe("debug-test");
@@ -152,5 +152,38 @@ describe("createPipelineBase", () => {
       { mode: "async" },
     );
     expect(() => pipeline.use(asyncHook)).not.toThrow();
+  });
+
+  it("run() stops execution on early return", () => {
+    const earlyHook = createHook("early", () => ({
+      early: true,
+      output: "STOP",
+    }));
+
+    const afterHook = createHook("after", () => {
+      throw new Error("should not run");
+    });
+
+    const pipeline = createPipelineBase(
+      [earlyHook, afterHook],
+      (_ctx, hooks) => {
+        for (const hook of hooks) {
+          const result = hook.run(null);
+          if (result?.early) {
+            return { early: true, ctx: null, output: result.output };
+          }
+        }
+        return { early: false, ctx: null };
+      },
+      { mode: "sync" },
+    );
+
+    const result = pipeline.run(null);
+
+    expect(result).toEqual({
+      early: true,
+      ctx: null,
+      output: "STOP",
+    });
   });
 });

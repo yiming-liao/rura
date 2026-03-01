@@ -2,13 +2,11 @@ import { type RuraHook } from "../../../hooks";
 import { isAsyncHook } from "../../../hooks/utils/is-async-hook";
 
 /**
- * Formats and prints pipeline debug information.
- *
- * Outputs hook ordering, names, and execution kind.
+ * Logs pipeline hook ordering and execution kind.
  *
  * @internal
  */
-export function formatDebugMessage(hooks: RuraHook[], name = "Rura"): void {
+export function logPipelineHooks(hooks: RuraHook[], name = "Rura"): void {
   const count = hooks.length;
   const suffix = count === 1 ? "hook" : "hooks";
 

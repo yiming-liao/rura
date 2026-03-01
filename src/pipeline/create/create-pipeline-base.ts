@@ -1,7 +1,7 @@
 import type { RuraHook } from "../../hooks/types";
 import type { RuraResult } from "../../pipeline/types";
-import { formatDebugMessage } from "../../pipeline/create/utils/format-debug-message";
 import { assertSyncHook } from "./utils/assert-sync-hook";
+import { logPipelineHooks } from "./utils/log-pipeline-hooks";
 
 /**
  * Internal pipeline builder.
@@ -76,10 +76,12 @@ export function createPipelineBase<
   }
 
   /**
-   * Outputs hook ordering information for debugging.
+   * Logs the current hook order and execution type.
+   *
+   * Intended for development-time inspection.
    */
-  function debugHooks() {
-    formatDebugMessage(hooks, name);
+  function logHooks() {
+    logPipelineHooks(hooks, name);
   }
 
   /**
@@ -95,7 +97,7 @@ export function createPipelineBase<
   // -----------------------------------------------------------------
   // Instance assembly
   // -----------------------------------------------------------------
-  const pipeline = { use, getHooks, debugHooks, run };
+  const pipeline = { use, getHooks, logHooks, run };
   sortHooks();
 
   return pipeline;
