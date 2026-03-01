@@ -1,20 +1,26 @@
-import { type RuraHook } from "../../hooks";
+import { type RuraHookSync } from "../../hooks";
 import { createPipelineBase } from "../../pipeline/create/create-pipeline-base";
-import * as runModule from "../../pipeline/run/run";
+import { run } from "../run";
 
 /**
- * Creates a __synchronous__ Rura pipeline.
+ * Creates a synchronous Rura pipeline.
  *
- * - Only synchronous hooks are allowed.
- * - Hooks are executed in order using `run()`.
- * - Returns a chainable pipeline instance with `use`, `merge`, `getHooks`, and `run`.
+ * The returned pipeline:
+ * - Executes hooks sequentially using a synchronous strategy.
+ * - Rejects asynchronous hooks at registration time.
+ * - Preserves deterministic ordering based on `order`.
+ *
+ * This variant guarantees that `run()` returns immediately
+ * without producing a Promise.
+ *
+ * @public
  */
 export function createPipeline<Ctx = unknown, Out = unknown>(
-  hooks: RuraHook<Ctx, Out>[] = [],
+  hooks: RuraHookSync<Ctx, Out>[] = [],
 ) {
-  return createPipelineBase<RuraHook<Ctx, Out>, Ctx, Out, "sync">(
+  return createPipelineBase<RuraHookSync<Ctx, Out>, Ctx, Out, "sync">(
     hooks,
-    runModule.run,
+    run,
     { mode: "sync" },
   );
 }

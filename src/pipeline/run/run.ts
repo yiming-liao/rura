@@ -1,35 +1,32 @@
-import type { RuraHook } from "../../hooks";
+import type { RuraHookSync } from "../../hooks";
 import type { RuraResult } from "../../pipeline/types";
-import { isAsyncHook } from "../../hooks/utils/is-async-hook";
 
 /**
- * Executes a __synchronous__ Rura pipeline.
+ * Executes a synchronous Rura pipeline.
  *
- * - Hooks are executed in order.
- * - If any hook returns `{ early: true, output }`, the pipeline
- *   stops immediately and returns the early result.
- * - Async hooks are not allowed. Detecting one will throw an error.
+ * Hooks are executed sequentially in the given order.
  *
- * @param ctx - The initial pipeline context.
- * @param hooks - A list of hooks to execute sequentially.
- * @returns A promise resolving to a `RuraResult`.
+ * Execution contract:
+ * - Each hook receives the same `ctx` reference.
+ * - If a hook returns `{ early: true, output }`,
+ *   execution stops immediately and that result is returned.
+ * - If no hook triggers early termination, a normal result
+ *   `{ early: false, ctx }` is returned.
+ *
+ * This function is strictly synchronous:
+ * - It does not produce a Promise.
+ * - Only `RuraHookSync` hooks are allowed.
+ *
+ * @public
  */
 export function run<Ctx = unknown, Out = unknown>(
   ctx: Ctx,
-  hooks: RuraHook<Ctx, Out>[],
+  hooks: RuraHookSync<Ctx, Out>[],
 ): RuraResult<Ctx, Out> {
   for (const hook of hooks) {
-    if (isAsyncHook(hook)) {
-      throw new Error(
-        `Async hook "${hook.name}" detected in run(). Use runAsync() instead.`,
-      );
-    }
-
     const result = hook.run(ctx);
-    const isEarlyReturn = result && result.early === true;
 
-    // Early return
-    if (isEarlyReturn) {
+    if (result?.early === true) {
       return {
         early: true,
         ctx,
@@ -38,7 +35,6 @@ export function run<Ctx = unknown, Out = unknown>(
     }
   }
 
-  // Normal return
   return {
     early: false,
     ctx,

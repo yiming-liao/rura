@@ -1,66 +1,51 @@
-import type { RuraHook } from "../../../src/hooks";
-import { describe, it, expect } from "vitest";
-import { createHook, createHookAsync } from "../../../src/hooks";
-import { run } from "../../../src/pipeline/run/run";
+import { describe, it, expect, vi } from "vitest";
+import { createHook } from "../../../src/hooks/create-hook";
+import { run } from "../../../src/pipeline";
 
-describe("run (synchronous pipeline)", () => {
-  it("executes all sync hooks when no early return occurs", () => {
-    const calls: string[] = [];
-
-    const hookA = createHook("a", () => {
-      calls.push("a");
-    });
-
-    const hookB = createHook("b", () => {
-      calls.push("b");
-    });
-
-    const result = run({}, [hookA, hookB]);
-
-    expect(calls).toEqual(["a", "b"]);
-    expect(result).toEqual({ early: false, ctx: {} });
-  });
-
-  it("stops early when a hook returns an early-return signal", () => {
-    const hookA = createHook("a", () => ({ early: true, output: 42 }) as const);
-
-    const hookB = createHook("b", () => {
-      throw new Error("should not execute");
-    });
-
-    const result = run({}, [hookA, hookB]);
-
-    expect(result.early).toBe(true);
-    expect(result.output).toBe(42);
-    expect(result.ctx).toEqual({});
-  });
-
-  it("throws when encountering an async hook", () => {
-    const syncHook = createHook("sync", () => {});
-    const asyncHook = createHookAsync("async", async () => {});
-
-    const hooks: RuraHook[] = [syncHook, asyncHook];
-
-    expect(() => run({}, hooks)).toThrowError(/Async hook "async" detected/);
-  });
-
-  it("passes context through unchanged", () => {
-    const ctx = { message: "hello" };
-
-    const hook = createHook("test", () => {});
-
+describe("run (synchronous)", () => {
+  it("returns normal result when no hook triggers early", () => {
+    const hook = createHook("A", () => {});
+    const ctx = { value: 1 };
     const result = run(ctx, [hook]);
-
-    expect(result.ctx).toBe(ctx);
+    expect(result).toEqual({
+      early: false,
+      ctx,
+    });
   });
 
-  it("returns the correct output type on early return", () => {
-    const hook = createHook("value", () => {
-      return { early: true, output: { str: "ok", num: 1 } } as const;
+  it("stops execution on early return", () => {
+    const spy = vi.fn();
+    const earlyHook = createHook("early", () => ({
+      early: true,
+      output: 42,
+    }));
+    const afterHook = createHook("after", spy);
+    const ctx = {};
+    const result = run(ctx, [earlyHook, afterHook]);
+    expect(result).toEqual({
+      early: true,
+      ctx,
+      output: 42,
     });
+    expect(spy).not.toHaveBeenCalled();
+  });
 
-    const result = run({}, [hook]);
+  it("passes the same ctx reference to all hooks", () => {
+    const ctx = { count: 0 };
+    const hook1 = createHook("A", (c: any) => {
+      c.count++;
+    });
+    const hook2 = createHook("B", (c: any) => {
+      c.count++;
+    });
+    run(ctx, [hook1, hook2]);
+    expect(ctx.count).toBe(2);
+  });
 
-    expect(result.output).toEqual({ str: "ok", num: 1 });
+  it("propagates thrown errors", () => {
+    const hook = createHook("error", () => {
+      throw new Error("boom");
+    });
+    expect(() => run({}, [hook])).toThrow("boom");
   });
 });

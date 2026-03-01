@@ -1,74 +1,63 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable unicorn/consistent-function-scoping */
-import type { RuraHook } from "../../../../src/hooks";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { createHook, createHookAsync } from "../../../../src/hooks/create-hook";
 import { formatDebugMessage } from "../../../../src/pipeline/create/utils/format-debug-message";
 
 describe("formatDebugMessage", () => {
-  let logs: string[] = [];
+  let spy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
-    logs = [];
-    vi.spyOn(console, "log").mockImplementation((msg) => {
-      logs.push(msg);
-    });
+    spy = vi.spyOn(console, "log").mockImplementation(() => {});
   });
 
-  const makeHook = (name: string, order: number, async = false): RuraHook => {
-    return {
-      name,
-      order,
-      run: async ? async (ctx: any) => ctx : (ctx: any) => ctx,
-    };
-  };
-
-  it("prints default header and hook list", () => {
-    const hooks = [makeHook("normalize", 1), makeHook("format", 2, true)];
-
-    formatDebugMessage(hooks);
-
-    expect(logs[0]).toContain("🌊 Rura Pipeline");
-    expect(logs[2]).toContain("normalize (sync)");
-    expect(logs[3]).toContain("format (async)");
+  afterEach(() => {
+    spy.mockRestore();
   });
 
-  it("prints name when provided", () => {
-    const hooks = [makeHook("test", 0)];
-
-    formatDebugMessage(hooks, "myPipeline");
-
-    expect(logs[0]).toContain("🌊 Rura Pipeline <myPipeline>");
+  it("prints header with singular form", () => {
+    const hook = createHook("test", () => {}, 200);
+    formatDebugMessage([hook], "my-pipeline");
+    expect(spy).toHaveBeenCalledWith("my-pipeline (1 hook)");
   });
 
-  it("uses title callback when provided", () => {
-    const hooks: any[] = [];
-    const titleFn = vi.fn(() => "✨ Custom Title");
-
-    formatDebugMessage(hooks, undefined, titleFn);
-
-    expect(titleFn).toHaveBeenCalled();
-    expect(logs[0]).toBe("\n✨ Custom Title");
+  it("prints header with plural form", () => {
+    const a = createHook("A", () => {});
+    const b = createHook("B", () => {});
+    formatDebugMessage([a, b], "my-pipeline");
+    expect(spy).toHaveBeenCalledWith("my-pipeline (2 hooks)");
   });
 
-  it("prints hooks in correct order", () => {
-    const hooks = [
-      makeHook("z-last", 5),
-      makeHook("a-first", 1),
-      makeHook("m-middle", 3),
-    ];
-
-    formatDebugMessage(hooks);
-
-    expect(logs.some((l) => l.includes("a-first"))).toBe(true);
-    expect(logs.some((l) => l.includes("m-middle"))).toBe(true);
-    expect(logs.some((l) => l.includes("z-last"))).toBe(true);
+  it("prints hook entries with sync label", () => {
+    const hook = createHook("sync-test", () => {}, 10);
+    formatDebugMessage([hook]);
+    const calls = spy.mock.calls.map((c: any) => c[0]);
+    expect(calls.some((line: any) => line.includes("sync-test (sync)"))).toBe(
+      true,
+    );
   });
 
-  it("prints separator lines", () => {
-    const hooks: any[] = [];
+  it("prints hook entries with async label", () => {
+    const hook = createHookAsync("async-test", async () => {}, 5);
+    formatDebugMessage([hook]);
+    const calls = spy.mock.calls.map((c: any) => c[0]);
+    expect(calls.some((line: any) => line.includes("async-test (async)"))).toBe(
+      true,
+    );
+  });
 
-    formatDebugMessage(hooks);
+  it("uses '-' when order is undefined", () => {
+    const hook = createHook("no-order", () => {});
+    formatDebugMessage([hook]);
+    const calls = spy.mock.calls.map((c: any) => c[0]);
+    expect(calls.some((line: any) => line.includes("order: -"))).toBe(true);
+  });
 
-    expect(logs).toContain("───");
+  it("prints separators", () => {
+    const hook = createHook("test", () => {});
+    formatDebugMessage([hook]);
+    const separatorCount = spy.mock.calls
+      .map((c: any) => c[0])
+      .filter((line: any) => line === "───").length;
+    expect(separatorCount).toBe(2);
   });
 });

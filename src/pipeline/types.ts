@@ -1,9 +1,20 @@
 /**
- * Final result of a pipeline execution.
+ * Result of a Rura pipeline execution.
  *
- * - If `early` is true, the pipeline stopped before completing all hooks.
- * - The `ctx` field always contains the context after the last executed hook.
- * - The `output` field is present only when early termination occurs.
+ * This type represents the final outcome of running a pipeline,
+ * either through `run` or `runAsync`.
+ *
+ * Execution semantics:
+ * - `ctx` always refers to the same context object that was
+ *   passed into the pipeline. Hooks may mutate it in place.
+ * - When `early` is `true`, execution stopped before all hooks
+ *   completed, and `output` contains the early-return value.
+ * - When `early` is `false`, all hooks were executed and no
+ *   early termination occurred. In this case, `output` is not present.
+ *
+ * The `early` field acts as a discriminant for safe narrowing.
+ *
+ * @public
  */
 export type RuraResult<Ctx, Out> =
   | {

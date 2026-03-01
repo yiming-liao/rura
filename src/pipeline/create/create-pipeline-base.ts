@@ -1,27 +1,26 @@
 import type { RuraHook } from "../../hooks/types";
 import type { RuraResult } from "../../pipeline/types";
-import { isAsyncHook } from "../../hooks/utils/is-async-hook";
 import { formatDebugMessage } from "../../pipeline/create/utils/format-debug-message";
+import { assertSyncHook } from "./utils/assert-sync-hook";
 
 /**
- * Creates a generic Rura pipeline instance.
+ * Internal pipeline builder.
  *
- * This base builder is used by both the synchronous and asynchronous
- * pipeline variants. It manages:
+ * Maintains an ordered hook registry and delegates execution
+ * to the provided strategy function.
  *
- * - Hook registration
- * - Hook ordering
- * - Hook merging from other pipelines
- * - Executing the pipeline through a provided `runFn` strategy
+ * Responsibilities:
+ * - Enforce mode compatibility (sync / async)
+ * - Maintain deterministic hook ordering
+ * - Prevent execution-time mutation of the registry
  *
- * The returned API is fully chainable and does not mutate external state.
+ * This builder is shared by the public sync and async
+ * pipeline factories.
  *
- * @param initialHooks - Hooks to seed the pipeline with.
- * @param runFn - A strategy function responsible for executing the pipeline.
- * @returns A pipeline instance exposing `use`, `merge`, `getHooks`, `debugHooks`, and `run`.
+ * @internal
  */
 export function createPipelineBase<
-  Hook extends RuraHook,
+  Hook extends RuraHook<Ctx, Out>,
   Ctx,
   Out,
   Mode extends "sync" | "async",
@@ -33,56 +32,71 @@ export function createPipelineBase<
   ) => Mode extends "sync"
     ? RuraResult<Ctx, Out>
     : Promise<RuraResult<Ctx, Out>>,
-  options: { name?: string; mode: "sync" | "async" },
+  options: { name?: string; mode: Mode },
 ) {
+  const isSync = options.mode === "sync";
+  if (isSync) for (const hook of initialHooks) assertSyncHook(hook);
   const name = options.name;
-  const hooks = initialHooks.map((h) => applyDefaultOrder(h));
+  const hooks = [...initialHooks];
 
-  /** Ensures that every hook has a numeric order value. */
-  function applyDefaultOrder(h: Hook): Hook {
-    return { ...h, order: h.order ?? 0 };
-  }
+  // -----------------------------------------------------------------
+  // Internal helpers
+  // -----------------------------------------------------------------
 
-  /** Sorts hooks by ascending order (lower values run first). */
+  /**
+   * Sorts hooks by ascending order (lower values run first).
+   */
   function sortHooks() {
-    hooks.sort((a, b) => a.order! - b.order!);
+    hooks.sort((a, b) => {
+      const ao = a.order ?? Number.POSITIVE_INFINITY;
+      const bo = b.order ?? Number.POSITIVE_INFINITY;
+      return ao - bo;
+    });
   }
 
-  /** Registers a new hook into the pipeline. */
-  function use(h: Hook) {
-    if (options.mode === "sync" && isAsyncHook(h)) {
-      throw new Error(`Async hook "${h.name}" is not allowed in createRura().`);
-    }
+  // -----------------------------------------------------------------
+  // Instance methods
+  // -----------------------------------------------------------------
 
-    hooks.push(applyDefaultOrder(h));
+  /**
+   * Registers a hook into the pipeline.
+   */
+  function use(hook: Hook) {
+    if (isSync) assertSyncHook(hook);
+    hooks.push(hook);
     sortHooks();
-    return api;
+    return pipeline;
   }
 
-  /** Merges hooks from another pipeline instance. */
-  function merge(other: { getHooks(): Hook[] }) {
-    other.getHooks().forEach((h) => hooks.push(applyDefaultOrder(h)));
-    sortHooks();
-    return api;
-  }
-
-  /** Returns a sorted shallow copy of all registered hooks. */
+  /**
+   * Returns a shallow copy of the ordered hooks.
+   */
   function getHooks() {
     return [...hooks];
   }
 
-  /** Prints the ordered hook list for debugging purposes. */
-  function debugHooks(title?: (hooks: Hook[]) => string) {
-    formatDebugMessage(hooks, name, title);
+  /**
+   * Outputs hook ordering information for debugging.
+   */
+  function debugHooks() {
+    formatDebugMessage(hooks, name);
   }
 
-  /** Executes the pipeline via the provided strategy function. */
+  /**
+   * Executes the pipeline using the injected strategy.
+   *
+   * A shallow copy of the registry is provided to prevent
+   * execution-time mutation.
+   */
   function run(ctx: Ctx) {
-    return runFn(ctx, hooks);
+    return runFn(ctx, [...hooks]);
   }
 
-  const api = { use, merge, getHooks, debugHooks, run };
+  // -----------------------------------------------------------------
+  // Instance assembly
+  // -----------------------------------------------------------------
+  const pipeline = { use, getHooks, debugHooks, run };
   sortHooks();
 
-  return api;
+  return pipeline;
 }

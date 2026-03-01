@@ -2,16 +2,21 @@ import type { RuraHook } from "../../hooks";
 import type { RuraResult } from "../../pipeline/types";
 
 /**
- * Executes an __asynchronous__ Rura pipeline.
+ * Executes an asynchronous Rura pipeline.
  *
- * - Hooks are awaited in order.
- * - If any hook returns `{ early: true, output }`, the pipeline
- *   stops immediately and returns the early result.
- * - Both sync and async hooks are allowed.
+ * Hooks are awaited sequentially in the provided order.
  *
- * @param ctx - The initial pipeline context.
- * @param hooks - A list of hooks to execute sequentially.
- * @returns A promise resolving to a `RuraResult`.
+ * Execution contract:
+ * - Each hook receives the same `ctx` reference.
+ * - Hooks may be synchronous or asynchronous.
+ * - If a hook resolves to `{ early: true, output }`,
+ *   execution stops immediately and that result is returned.
+ * - If no hook triggers early termination, a normal result
+ *   `{ early: false, ctx }` is returned.
+ *
+ * This function always returns a Promise.
+ *
+ * @public
  */
 export async function runAsync<Ctx = unknown, Out = unknown>(
   ctx: Ctx,
@@ -20,8 +25,7 @@ export async function runAsync<Ctx = unknown, Out = unknown>(
   for (const hook of hooks) {
     const result = await hook.run(ctx);
 
-    // Early return
-    if (result && result.early === true) {
+    if (result?.early === true) {
       return {
         early: true,
         ctx,
@@ -30,7 +34,6 @@ export async function runAsync<Ctx = unknown, Out = unknown>(
     }
   }
 
-  // Normal return
   return {
     early: false,
     ctx,

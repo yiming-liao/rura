@@ -1,130 +1,156 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable unicorn/consistent-function-scoping */
-import type { RuraHook } from "../../../src/hooks/types";
-import type { RuraResult } from "../../../src/pipeline/types";
+
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { createHook, createHookAsync } from "../../../src/hooks";
+import { createHook, createHookAsync } from "../../../src/hooks/create-hook";
 import { createPipelineBase } from "../../../src/pipeline/create/create-pipeline-base";
+import { formatDebugMessage } from "../../../src/pipeline/create/utils/format-debug-message";
 
-describe("createRuraBase", () => {
+vi.mock("../../../src/pipeline/create/utils/format-debug-message", () => ({
+  formatDebugMessage: vi.fn(),
+}));
+
+describe("createPipelineBase", () => {
   beforeEach(() => {
-    vi.restoreAllMocks();
+    vi.clearAllMocks();
   });
 
-  function mockRunFn<Ctx, Out>(): [
-    ReturnType<typeof vi.fn>,
-    (ctx: Ctx, hooks: RuraHook<Ctx, Out>[]) => RuraResult<Ctx, Out>,
-  ] {
-    const impl = (ctx: Ctx): RuraResult<Ctx, Out> => ({
-      early: false as const,
-      ctx,
-    });
-    const spy = vi.fn(impl);
-    return [spy, impl];
-  }
-
-  it("initializes with sorted hooks", () => {
-    const h1 = createHook("a", () => {}, 5);
-    const h2 = createHook("b", () => {}, 1);
-
-    const [runSpy] = mockRunFn() as any;
-    const pipeline = createPipelineBase([h1, h2], runSpy, { mode: "sync" });
-
-    expect(pipeline.getHooks().map((h) => h.name)).toEqual(["b", "a"]);
-  });
-
-  it("registers new hooks using use()", () => {
-    const h1 = createHook("a", () => {});
-    const h2 = createHook("b", () => {});
-
-    const [runSpy] = mockRunFn() as any;
-    const pipeline = createPipelineBase<RuraHook, any, any, any>([], runSpy, {
-      mode: "sync",
-    });
-
-    pipeline.use(h1).use(h2);
-
-    expect(pipeline.getHooks().map((h) => h.name)).toEqual(["a", "b"]);
-  });
-
-  it("throws when async hook is added in sync mode", () => {
-    const syncHook = createHook("sync", () => {});
+  it("throws when async hook is provided to sync pipeline (initial)", () => {
     const asyncHook = createHookAsync("async", async () => {});
-
-    const [runSpy] = mockRunFn() as any;
-    const pipeline = createPipelineBase<RuraHook, any, any, any>(
-      [syncHook],
-      runSpy,
-      {
+    expect(() =>
+      createPipelineBase([asyncHook], () => ({ early: false, ctx: null }), {
         mode: "sync",
-      },
-    );
-
-    expect(() => pipeline.use(asyncHook)).toThrowError(/not allowed/i);
+      }),
+    ).toThrow();
   });
 
-  it("allows async hooks in async mode", () => {
-    const syncHook = createHook("sync", () => {});
+  it("allows async hook in async pipeline", () => {
     const asyncHook = createHookAsync("async", async () => {});
-
-    const [runSpy] = mockRunFn() as any;
-    const pipeline = createPipelineBase<RuraHook, any, any, any>([], runSpy, {
-      mode: "async",
-    });
-
-    pipeline.use(syncHook).use(asyncHook);
-
-    expect(pipeline.getHooks().length).toBe(2);
+    expect(() =>
+      createPipelineBase(
+        [asyncHook],
+        async () => ({ early: false, ctx: null }),
+        { mode: "async" },
+      ),
+    ).not.toThrow();
   });
 
-  it("merges hooks from another pipeline", () => {
-    const a = createHook("a", () => {});
-    const b = createHook("b", () => {});
-
-    const [runSpy] = mockRunFn() as any;
-    const p1 = createPipelineBase<RuraHook, any, any, any>([a], runSpy, {
-      mode: "sync",
-    });
-    const p2 = createPipelineBase<RuraHook, any, any, any>([b], runSpy, {
-      mode: "sync",
-    });
-
-    p1.merge(p2);
-
-    expect(p1.getHooks().map((h) => h.name)).toEqual(["a", "b"]);
+  it("throws when async hook is registered via use() in sync mode", () => {
+    const pipeline = createPipelineBase(
+      [] as any,
+      () => ({ early: false, ctx: null }),
+      { mode: "sync" },
+    );
+    const asyncHook = createHookAsync("async", async () => {});
+    expect(() => pipeline.use(asyncHook)).toThrow();
   });
 
-  it("executes run() using the provided runFn", () => {
-    const hook = createHook("x", () => {});
-    const [runSpy] = mockRunFn() as any;
-
-    const pipeline = createPipelineBase([hook], runSpy, { mode: "sync" });
-
-    const ctx = { value: 123 };
-    const result = pipeline.run(ctx) as any;
-
-    expect(runSpy).toHaveBeenCalled();
-    expect(result.ctx).toEqual(ctx);
+  it("sorts initial hooks by order", () => {
+    const a = createHook("A", () => {}, 2);
+    const b = createHook("B", () => {}, 1);
+    const pipeline = createPipelineBase(
+      [a, b],
+      () => ({ early: false, ctx: null }),
+      { mode: "sync" },
+    );
+    expect(pipeline.getHooks().map((h) => h.name)).toEqual(["B", "A"]);
   });
 
-  it("debugHooks() prints hook list including sync/async type", () => {
-    const syncHook = createHook("syncHook", () => {}, 0);
-    const asyncHook = createHookAsync("asyncHook", async () => {}, 1);
+  it("keeps insertion order when no order is defined", () => {
+    const a = createHook("A", () => {});
+    const b = createHook("B", () => {});
+    const pipeline = createPipelineBase(
+      [a, b],
+      () => ({ early: false, ctx: null }),
+      { mode: "sync" },
+    );
+    expect(pipeline.getHooks().map((h) => h.name)).toEqual(["A", "B"]);
+  });
 
-    const [runSpy] = mockRunFn() as any;
-    const pipeline = createPipelineBase([syncHook, asyncHook], runSpy, {
-      mode: "async",
-    });
+  it("keeps insertion order when order values are equal", () => {
+    const a = createHook("A", () => {}, 1);
+    const b = createHook("B", () => {}, 1);
+    const pipeline = createPipelineBase(
+      [a, b],
+      () => ({ early: false, ctx: null }),
+      { mode: "sync" },
+    );
+    expect(pipeline.getHooks().map((h) => h.name)).toEqual(["A", "B"]);
+  });
 
-    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+  it("places ordered hooks before unordered ones", () => {
+    const a = createHook("A", () => {});
+    const b = createHook("B", () => {}, 1);
+    const pipeline = createPipelineBase(
+      [a, b],
+      () => ({ early: false, ctx: null }),
+      { mode: "sync" },
+    );
+    expect(pipeline.getHooks().map((h) => h.name)).toEqual(["B", "A"]);
+  });
 
+  it("use() registers hook and maintains ordering", () => {
+    const a = createHook("A", () => {});
+    const b = createHook("B", () => {}, 1);
+    const pipeline = createPipelineBase(
+      [a],
+      () => ({ early: false, ctx: null }),
+      { mode: "sync" },
+    );
+    pipeline.use(b);
+    expect(pipeline.getHooks().map((h) => h.name)).toEqual(["B", "A"]);
+  });
+
+  it("use() returns same pipeline instance (chainable)", () => {
+    const pipeline = createPipelineBase(
+      [] as any,
+      () => ({ early: false, ctx: null }),
+      { mode: "sync" },
+    );
+    const result = pipeline.use(createHook("A", () => {}));
+    expect(result).toBe(pipeline);
+  });
+
+  it("debugHooks delegates to formatDebugMessage", () => {
+    const a = createHook("A", () => {}, 2);
+    const b = createHook("B", () => {}, 1);
+    const pipeline = createPipelineBase(
+      [a, b],
+      () => ({ early: false, ctx: null }),
+      { mode: "sync", name: "debug-test" },
+    );
     pipeline.debugHooks();
+    expect(formatDebugMessage).toHaveBeenCalledTimes(1);
+    const [hooksArg, nameArg, titleArg] = (formatDebugMessage as any).mock
+      .calls[0];
+    expect(hooksArg.map((h: any) => h.name)).toEqual(["B", "A"]);
+    expect(nameArg).toBe("debug-test");
+    expect(titleArg).toBeUndefined();
+  });
 
-    const calls = logSpy.mock.calls.flat().join("\n");
+  it("run() provides a shallow copy of hooks", () => {
+    const hook = createHook("A", () => {});
+    let receivedHooks: any[] = [];
+    const pipeline = createPipelineBase(
+      [hook],
+      (_ctx, hooks) => {
+        receivedHooks = hooks;
+        hooks.push(createHook("MUTATED", () => {}));
+        return { early: false, ctx: null };
+      },
+      { mode: "sync" },
+    );
+    pipeline.run(null);
+    expect(pipeline.getHooks().map((h) => h.name)).toEqual(["A"]);
+    expect(receivedHooks.length).toBe(2);
+  });
 
-    expect(calls).toMatch(/syncHook \(sync\)/);
-    expect(calls).toMatch(/asyncHook \(async\)/);
-
-    logSpy.mockRestore();
+  it("does not assert in async mode when using async hook", () => {
+    const asyncHook = createHookAsync("async", async () => {});
+    const pipeline = createPipelineBase(
+      [] as any,
+      async () => ({ early: false, ctx: null }),
+      { mode: "async" },
+    );
+    expect(() => pipeline.use(asyncHook)).not.toThrow();
   });
 });
