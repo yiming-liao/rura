@@ -11,7 +11,9 @@ export function createHook<Ctx = unknown, Out = unknown>(name: string, run: Rura
 export function createHookAsync<Ctx = unknown, Out = unknown>(name: string, run: RuraHookAsync<Ctx, Out>["run"], order?: number): RuraHookAsync<Ctx, Out>;
 
 // @public
-export function createPipeline<Ctx = unknown, Out = unknown>(hooks?: RuraHookSync<Ctx, Out>[]): {
+export function createPipeline<Ctx = unknown, Out = unknown>(hooks?: RuraHookSync<Ctx, Out>[], options?: {
+    name?: string;
+}): {
     use: (hook: RuraHookSync<Ctx, Out>) => /*elided*/ any;
     getHooks: () => RuraHookSync<Ctx, Out>[];
     logHooks: () => void;
@@ -19,7 +21,9 @@ export function createPipeline<Ctx = unknown, Out = unknown>(hooks?: RuraHookSyn
 };
 
 // @public
-export function createPipelineAsync<Ctx = unknown, Out = unknown>(hooks?: RuraHook<Ctx, Out>[]): {
+export function createPipelineAsync<Ctx = unknown, Out = unknown>(hooks?: RuraHook<Ctx, Out>[], options?: {
+    name?: string;
+}): {
     use: (hook: RuraHook<Ctx, Out>) => /*elided*/ any;
     getHooks: () => RuraHook<Ctx, Out>[];
     logHooks: () => void;

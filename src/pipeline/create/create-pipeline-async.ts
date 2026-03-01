@@ -16,10 +16,11 @@ import { runAsync } from "../run";
  */
 export function createPipelineAsync<Ctx = unknown, Out = unknown>(
   hooks: RuraHook<Ctx, Out>[] = [],
+  options?: { name?: string },
 ) {
   return createPipelineBase<RuraHook<Ctx, Out>, Ctx, Out, "async">(
     hooks,
     runAsync,
-    { mode: "async" },
+    { mode: "async", ...options },
   );
 }

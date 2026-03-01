@@ -17,10 +17,11 @@ import { run } from "../run";
  */
 export function createPipeline<Ctx = unknown, Out = unknown>(
   hooks: RuraHookSync<Ctx, Out>[] = [],
+  options?: { name?: string },
 ) {
   return createPipelineBase<RuraHookSync<Ctx, Out>, Ctx, Out, "sync">(
     hooks,
     run,
-    { mode: "sync" },
+    { mode: "sync", ...options },
   );
 }
