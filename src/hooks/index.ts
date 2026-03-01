@@ -1,2 +1,7 @@
 export { createHook, createHookAsync } from "./create-hook";
-export type { RuraHook, RuraHookSync, RuraHookAsync } from "./types";
+export type {
+  RuraHookBase,
+  RuraHookSync,
+  RuraHookAsync,
+  RuraHook,
+} from "./types";

@@ -1,7 +1,7 @@
 {
   "name": "rura",
   "version": "1.0.8",
-  "description": "🌊 A pipeline engine that flows like water.",
+  "description": "The hook pipeline.",
   "author": "Yiming Liao",
   "homepage": "https://github.com/yiming-liao/rura#readme",
   "repository": {
@@ -17,18 +17,12 @@
   },
   "keywords": [
     "pipeline",
-    "hooks",
+    "hook",
     "hook-system",
-    "pipeline-engine",
-    "flow",
-    "workflow",
     "middleware",
-    "typescript",
-    "ts",
-    "utility",
-    "functional",
     "composition",
-    "composable"
+    "functional",
+    "typescript"
   ],
   "license": "MIT",
   "type": "module",
@@ -49,18 +43,21 @@
   ],
   "sideEffects": false,
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=18"
   },
   "scripts": {
     "type": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint",
     "test": "vitest",
     "knip": "knip --config .config/knip.config.ts",
-    "build": "tsup",
-    "prepublishOnly": "yarn build"
+    "build": "tsup && tsc -p tsconfig.build.json",
+    "prepublishOnly": "yarn build",
+    "api:build": "api-extractor run -c api-extractor/index.json --local",
+    "api:check": "api-extractor run -c api-extractor/index.json"
   },
   "dependencies": {},
   "devDependencies": {
+    "@microsoft/api-extractor": "^7.57.6",
     "@types/node": "^24.10.1",
     "@vitest/coverage-v8": "4.0.15",
     "eslint": "^9.39.1",

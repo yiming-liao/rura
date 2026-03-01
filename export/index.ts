@@ -1,9 +1,26 @@
+/**
+ * Rura — The hook pipeline.
+ *
+ * @packageDocumentation
+ */
+
+// rura
 export { rura } from "../src/rura";
 
+// hooks
 export {
-  type RuraHook,
-  type RuraHookAsync,
+  createHook,
+  createHookAsync,
+  type RuraHookBase,
   type RuraHookSync,
+  type RuraHookAsync,
+  type RuraHook,
 } from "../src/hooks";
 
-export { type RuraResult } from "../src/pipeline";
+export {
+  createPipeline,
+  createPipelineAsync,
+  run,
+  runAsync,
+  type RuraResult,
+} from "../src/pipeline";
