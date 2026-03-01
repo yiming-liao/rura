@@ -1,44 +1,50 @@
 /**
- * Base shape for all Rura hooks.
- * - Every hook must have a unique `name`.
- * - `order` controls execution priority (lower runs earlier).
+ * Base contract for all Rura hooks.
+ *
+ * A hook is an ordered execution unit within a pipeline.
+ * The `name` uniquely identifies the hook.
+ * The optional `order` controls execution priority (lower values run first).
+ *
+ * @public
  */
 export interface RuraHookBase {
-  /** Unique identifier for debugging and inspection. */
+  /** Unique hook identifier. */
   name: string;
 
-  /** Execution priority. Hooks with lower values run first. */
+  /** Execution priority. Lower values run earlier. */
   order?: number;
 }
 
 /**
- * Synchronous Rura hook.
- * - Runs without awaiting.
- * - May optionally signal early termination.
+ * Synchronous hook.
+ *
+ * Executed without awaiting.
+ * The provided `ctx` may be mutated.
+ * Returning an early signal terminates the pipeline.
+ *
+ * @public
  */
 export interface RuraHookSync<Ctx, Out> extends RuraHookBase {
-  /**
-   * Executes the hook.
-   * @returns Nothing, or an early-return signal with output.
-   */
   run(ctx: Ctx): void | { early: true; output: Out };
 }
 
 /**
- * Asynchronous Rura hook.
- * - Executes via `await`.
- * - May optionally signal early termination.
+ * Asynchronous hook.
+ *
+ * Executed via `await`.
+ * The provided `ctx` may be mutated.
+ * Resolving with an early signal terminates the pipeline.
+ *
+ * @public
  */
 export interface RuraHookAsync<Ctx, Out> extends RuraHookBase {
-  /**
-   * Executes the hook asynchronously.
-   * @returns A promise resolving to nothing or an early-return signal.
-   */
   run(ctx: Ctx): Promise<void | { early: true; output: Out }>;
 }
 
 /**
- * A union of all hook types accepted by the Rura pipeline.
+ * Union of all hook variants supported by the Rura pipeline.
+ *
+ * @public
  */
 export type RuraHook<Ctx = unknown, Out = unknown> =
   | RuraHookSync<Ctx, Out>

@@ -1,15 +1,18 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { RuraHook, RuraHookAsync } from "../types";
+import { ASYNC_HOOK } from "../internal";
 
 /**
- * Determines whether a given hook is asynchronous.
+ * Determines whether a hook is asynchronous.
  *
- * A hook is considered async if its `run` function
- * is an `AsyncFunction` (i.e. declared with `async`).
+ * Async hooks are identified via an internal runtime marker
+ * attached by `createHookAsync`.
  *
- * @returns `true` if the hook executes asynchronously, otherwise `false`.
+ * @internal
  */
 export function isAsyncHook<Ctx, Out>(
   hook: RuraHook<Ctx, Out>,
 ): hook is RuraHookAsync<Ctx, Out> {
-  return hook.run.constructor.name === "AsyncFunction";
+  return (hook as any)[ASYNC_HOOK] === true;
 }
